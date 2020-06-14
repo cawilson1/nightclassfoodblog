@@ -25,19 +25,36 @@ const pool = sql.createPool({
 //   }
 // })();
 
-(async function createBlogPostTable() {
-  try {
-    const conn = await pool.getConnection();
+// (async function createBlogPostTable() {
+//   try {
+//     const conn = await pool.getConnection();
 
-    conn.query("USE foodblog");
+//     conn.query("USE foodblog");
 
-    const foodblogpostDb = await conn.query(
-      "CREATE TABLE IF NOT EXISTS foodblogposts (id INT UNIQUE NOT NULL AUTO_INCREMENT, title VARCHAR(255), description VARCHAR(4095), username VARCHAR(255) NOT NULL, date DATETIME NOT NULL, PRIMARY KEY(id), FOREIGN KEY(username) REFERENCES user(username)  )"
-    );
-    console.log(foodblogpostDb);
+//     const foodblogpostDb = await conn.query(
+//       "CREATE TABLE IF NOT EXISTS foodblogpost (id INT UNIQUE NOT NULL AUTO_INCREMENT, title VARCHAR(255), description VARCHAR(4095), username VARCHAR(255) NOT NULL, date DATETIME NOT NULL, PRIMARY KEY(id), FOREIGN KEY(username) REFERENCES user(username)  )"
+//     );
+//     console.log(foodblogpostDb);
 
-    conn.release();
-  } catch (error) {
-    console.log(error);
-  }
-})();
+//     conn.release();
+//   } catch (error) {
+//     console.log(error);
+//   }
+// })();
+
+// (async function createBlogPicTable() {
+//   try {
+//     const conn = await pool.getConnection();
+
+//     conn.query("USE foodblog");
+
+//     const foodblogpicDb = await conn.query(
+//       "CREATE TABLE IF NOT EXISTS foodblogpic (s3uuid VARCHAR(255) NOT NULL UNIQUE, description VARCHAR(4095), foodblogpost INT NOT NULL, PRIMARY KEY(s3uuid), FOREIGN KEY(foodblogpost) REFERENCES foodblogpost(id)  )"
+//     );
+//     console.log(foodblogpicDb);
+
+//     conn.release();
+//   } catch (error) {
+//     console.log(error);
+//   }
+// })();
