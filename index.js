@@ -31,7 +31,47 @@ app.post("/user", authorizeUser, async (request, response) => {
       [
         request.body.username,
         request.body.profilepic ? request.body.profilepic : null,
-        request.body.bio ? request.body.profilepic : null
+        request.body.bio ? request.body.bio : null
+      ]
+    );
+
+    //dont do it this way unless you want a sql injection attack
+    // const queryResponse = await conn.query(
+    //   `INSERT INTO foodblog.user (username, profilepic, bio) VALUES (${request.body.username},${request.body.profilepic},${request.body.bio})`
+    // );
+    conn.release();
+    console.log(queryResponse);
+    response.status(200).send({ message: queryResponse });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
+app.put("/user", authorizeUser, async (request, response) => {
+  try {
+    console.log("PUT USER");
+    if (!request.body.username) {
+      response.status(400).send({ message: "no username entered" });
+    }
+
+    const selectQuery = await pool.execute(
+      `SELECT * FROM foodblog.user WHERE username = ?`,
+      [request.body.username]
+    );
+
+    console.log(selectQuery[0][0]);
+    const selectedUser = selectQuery[0][0];
+    const conn = await pool.getConnection();
+    const queryResponse = await conn.execute(
+      `UPDATE foodblog.user SET username = ?, profilepic = ?, bio = ? WHERE username = ?`,
+      [
+        request.body.username,
+        request.body.profilepic
+          ? request.body.profilepic
+          : selectedUser.profilepic,
+        request.body.bio ? request.body.bio : selectedUser.bio,
+        request.body.username
       ]
     );
 
