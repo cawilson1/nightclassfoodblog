@@ -74,11 +74,6 @@ app.put("/user", authorizeUser, async (request, response) => {
         request.body.username
       ]
     );
-
-    //dont do it this way unless you want a sql injection attack
-    // const queryResponse = await conn.query(
-    //   `INSERT INTO foodblog.user (username, profilepic, bio) VALUES (${request.body.username},${request.body.profilepic},${request.body.bio})`
-    // );
     conn.release();
     console.log(queryResponse);
     response.status(200).send({ message: queryResponse });
@@ -95,6 +90,23 @@ app.get("/user", authorizeUser, async (request, response) => {
     const recordset = await conn.execute(
       `SELECT * FROM foodblog.user WHERE username = ?`,
       [request.query.username]
+    );
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
+app.delete("/user", authorizeUser, async (request, response) => {
+  try {
+    console.log("DELETE ONE USER");
+    const conn = await pool.getConnection();
+    const recordset = await conn.execute(
+      `DELETE FROM foodblog.user WHERE username = ?`,
+      [request.body.username]
     );
     conn.release();
     console.log(recordset[0]);
