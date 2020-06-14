@@ -48,6 +48,20 @@ app.post("/user", authorizeUser, async (request, response) => {
   }
 });
 
+app.get("/users", authorizeUser, async (request, response) => {
+  try {
+    console.log("GET ALL USERS");
+    const conn = await pool.getConnection();
+    const recordset = await conn.query(`SELECT * FROM foodblog.user`);
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
 function authorizeUser(request, response, next) {
   next();
 }
