@@ -19,7 +19,7 @@ const pool = sql.createPool({
 // `SELECT * FROM bankaccountinfo WHERE username = ${request.body.username} INNER JOIN asdfasdf SELECTI`
 // `SELECT * FROM bankaccountinfo WHERE username = 'asasasdfasdfasdf' OR 1 = 1 DROP TABLE bankaccountinfo -- INNER JOIN asdfasdf SELECTI`
 
-app.post("/user", async (request, response) => {
+app.post("/user", authorizeUser, async (request, response) => {
   try {
     console.log("POST USER");
     if (!request.body.username) {
@@ -47,5 +47,9 @@ app.post("/user", async (request, response) => {
     response.status(500).send({ message: error });
   }
 });
+
+function authorizeUser(request, response, next) {
+  next();
+}
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
