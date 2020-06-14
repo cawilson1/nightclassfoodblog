@@ -48,6 +48,23 @@ app.post("/user", authorizeUser, async (request, response) => {
   }
 });
 
+app.get("/user", authorizeUser, async (request, response) => {
+  try {
+    console.log("GET ONE USER");
+    const conn = await pool.getConnection();
+    const recordset = await conn.execute(
+      `SELECT * FROM foodblog.user WHERE username = ?`,
+      [request.query.username]
+    );
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
 app.get("/users", authorizeUser, async (request, response) => {
   try {
     console.log("GET ALL USERS");
