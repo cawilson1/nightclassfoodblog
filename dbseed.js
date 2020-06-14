@@ -7,10 +7,18 @@ const pool = sql.createPool({
   password: "password1"
 });
 
-(async function testConnection() {
+(async function createUserTable() {
   try {
     const conn = await pool.getConnection();
-    console.log("connection created", conn);
+
+    conn.query("CREATE DATABASE IF NOT EXISTS foodblog");
+    conn.query("USE foodblog");
+
+    const userDb = await conn.query(
+      "CREATE TABLE IF NOT EXISTS user (username VARCHAR(255) UNIQUE NOT NULL, profilepic VARCHAR(255), bio VARCHAR (3000), PRIMARY KEY(username) )"
+    );
+    console.log(userDb);
+
     conn.release();
   } catch (error) {
     console.log(error);
