@@ -1,9 +1,17 @@
+// const express = require("express");
+// const serverless = require("serverless-http");
+// const cors = require("cors");
+// const app = express();
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// app.use(cors());
+
+const serverless = require("serverless-http");
 const { DB_HOST, DB_PASSWORD, DB_USER } = require("./creds");
 const express = require("express");
 const sql = require("mysql2/promise");
 const cors = require("cors");
 
-const PORT = 4000;
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -131,50 +139,11 @@ app.get("/users", authorizeUser, async (request, response) => {
   }
 });
 
-app.post("/foodblogpost", authorizeUser, async (request, response) => {
-  try {
-    console.log("POST FOOD BLOGPOST");
-    if (!request.body.username) {
-      response.status(400).send({ message: "this blogpost has no user" });
-    }
-    const conn = await pool.getConnection();
-    const queryResponse = await conn.execute(
-      `INSERT INTO foodblog.foodblogpost (username,title,description,date) VALUES (?, ?, ?, ?)`,
-      [
-        request.body.username,
-        request.body.title ? request.body.title : null,
-        request.body.description ? request.body.description : null,
-        new Date()
-      ]
-    );
-    conn.release();
-    console.log(queryResponse);
-    response.status(200).send({ message: queryResponse });
-  } catch (error) {
-    console.log(error);
-    response.status(500).send({ message: error });
-  }
-});
-
-app.get("/foodblogposts", authorizeUser, async (request, response) => {
-  try {
-    console.log("GET ALL foodblogposts");
-    const conn = await pool.getConnection();
-    const recordset = await conn.query(
-      `SELECT * FROM foodblog.foodblogpost`
-      //   `SELECT date, bio, users.username FROM foodblog.user users JOIN foodblog.foodblogpost foodposts ON users.username = foodposts.username`
-    );
-    conn.release();
-    console.log(recordset[0]);
-    response.status(200).send({ message: recordset[0] });
-  } catch (error) {
-    console.log(error);
-    response.status(500).send({ message: error });
-  }
-});
-
 function authorizeUser(request, response, next) {
+  if (request.query.secret != "supersecret") {
+    response.status(403).send("");
+  }
   next();
 }
 
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+module.exports.handler = serverless(app);
