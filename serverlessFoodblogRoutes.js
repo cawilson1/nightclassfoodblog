@@ -139,6 +139,117 @@ app.get("/users", authorizeUser, async (request, response) => {
   }
 });
 
+app.post("/foodblogpost", authorizeUser, async (request, response) => {
+  try {
+    console.log("POST FOOD BLOGPOST");
+    if (!request.body.username) {
+      response.status(400).send({ message: "this blogpost has no user" });
+    }
+    const conn = await pool.getConnection();
+    const queryResponse = await conn.execute(
+      `INSERT INTO foodblog.foodblogpost (username,title,description,date) VALUES (?, ?, ?, ?)`,
+      [
+        request.body.username,
+        request.body.title ? request.body.title : null,
+        request.body.description ? request.body.description : null,
+        new Date()
+      ]
+    );
+    conn.release();
+    console.log(queryResponse);
+    response.status(200).send({ message: queryResponse });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
+app.get("/foodblogposts", authorizeUser, async (request, response) => {
+  try {
+    console.log("GET ALL foodblogposts");
+    const conn = await pool.getConnection();
+    const recordset = await conn.query(
+      `SELECT * FROM foodblog.foodblogpost`
+      //   `SELECT date, bio, users.username FROM foodblog.user users JOIN foodblog.foodblogpost foodposts ON users.username = foodposts.username`
+    );
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
+app.get("/foodblogpost", authorizeUser, async (request, response) => {
+  try {
+    console.log("GET ONE BLOGPOST");
+    const conn = await pool.getConnection();
+    const recordset = await conn.execute(
+      `SELECT * FROM foodblog.foodblogpost WHERE id = ?`,
+      [request.query.blogPostId]
+    );
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
+app.delete("/foodblogpost", authorizeUser, async (request, response) => {
+  try {
+    console.log("DELETE ONE FOOD BLOGPOST");
+    const conn = await pool.getConnection();
+    const recordset = await conn.execute(
+      `DELETE FROM foodblog.foodblogpost WHERE id = ?`,
+      [request.body.blogPostId]
+    );
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
+app.put("/foodblogpost", authorizeUser, async (request, response) => {
+  try {
+    console.log("PUT FOOD BLOGPOST");
+    if (!request.body.blogPostId) {
+      response.status(400).send({ message: "no valid blog id entered" });
+    }
+
+    const selectQuery = await pool.execute(
+      `SELECT * FROM foodblog.foodblogpost WHERE id = ?`,
+      [request.body.blogPostId]
+    );
+
+    console.log(selectQuery[0][0]);
+    const selectedBlogPost = selectQuery[0][0];
+    const conn = await pool.getConnection();
+    const queryResponse = await conn.execute(
+      `UPDATE foodblog.foodblogpost SET title = ?, description = ?, date = ? WHERE id = ?`,
+      [
+        request.body.title ? request.body.title : selectedBlogPost.title,
+        request.body.description
+          ? request.body.description
+          : selectedBlogPost.description,
+        new Date(),
+        request.body.blogPostId
+      ]
+    );
+    conn.release();
+    console.log(queryResponse);
+    response.status(200).send({ message: queryResponse });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
 function authorizeUser(request, response, next) {
   if (request.query.secret != "supersecret") {
     response.status(403).send("");
