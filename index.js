@@ -207,6 +207,41 @@ app.delete("/foodblogpost", authorizeUser, async (request, response) => {
   }
 });
 
+app.put("/foodblogpost", authorizeUser, async (request, response) => {
+  try {
+    console.log("PUT FOOD BLOGPOST");
+    if (!request.body.blogPostId) {
+      response.status(400).send({ message: "no valid blog id entered" });
+    }
+
+    const selectQuery = await pool.execute(
+      `SELECT * FROM foodblog.foodblogpost WHERE id = ?`,
+      [request.body.blogPostId]
+    );
+
+    console.log(selectQuery[0][0]);
+    const selectedBlogPost = selectQuery[0][0];
+    const conn = await pool.getConnection();
+    const queryResponse = await conn.execute(
+      `UPDATE foodblog.foodblogpost SET title = ?, description = ?, date = ? WHERE id = ?`,
+      [
+        request.body.title ? request.body.title : selectedBlogPost.title,
+        request.body.description
+          ? request.body.description
+          : selectedBlogPost.description,
+        new Date(),
+        request.body.blogPostId
+      ]
+    );
+    conn.release();
+    console.log(queryResponse);
+    response.status(200).send({ message: queryResponse });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
 function authorizeUser(request, response, next) {
   next();
 }
