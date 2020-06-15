@@ -173,6 +173,40 @@ app.get("/foodblogposts", authorizeUser, async (request, response) => {
   }
 });
 
+app.get("/foodblogpost", authorizeUser, async (request, response) => {
+  try {
+    console.log("GET ONE BLOGPOST");
+    const conn = await pool.getConnection();
+    const recordset = await conn.execute(
+      `SELECT * FROM foodblog.foodblogpost WHERE id = ?`,
+      [request.query.blogPostId]
+    );
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
+app.delete("/foodblogpost", authorizeUser, async (request, response) => {
+  try {
+    console.log("DELETE ONE FOOD BLOGPOST");
+    const conn = await pool.getConnection();
+    const recordset = await conn.execute(
+      `DELETE FROM foodblog.foodblogpost WHERE id = ?`,
+      [request.body.blogPostId]
+    );
+    conn.release();
+    console.log(recordset[0]);
+    response.status(200).send({ message: recordset[0] });
+  } catch (error) {
+    console.log(error);
+    response.status(500).send({ message: error });
+  }
+});
+
 function authorizeUser(request, response, next) {
   next();
 }
