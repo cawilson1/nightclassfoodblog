@@ -283,6 +283,48 @@ app.get("/foodblogpics", authorizeUser, async (request, response) => {
   }
 });
 
+app.get("/everything", authorizeUser, async (request, response) => {
+  try {
+    console.log("GET EVERYTHING");
+    const conn = await pool.getConnection();
+    const queryResponse = await conn.execute(
+      `SELECT * FROM foodblog.foodblogpic pics
+        JOIN foodblog.foodblogpost posts 
+        ON pics.foodblogpost = posts.id
+          JOIN foodblog.user users
+          ON posts.username = users.username      
+            `
+    );
+    conn.release();
+    console.log(queryResponse[0]);
+    response.status(200).send({ message: queryResponse[0] });
+  } catch (error) {
+    response.status(500).send({ message: error });
+  }
+});
+
+app.get("/everythingbyuser", authorizeUser, async (request, response) => {
+  try {
+    console.log("GET EVERYTHING");
+    const conn = await pool.getConnection();
+    const queryResponse = await conn.execute(
+      `SELECT * FROM foodblog.foodblogpic pics
+          JOIN foodblog.foodblogpost posts 
+          ON pics.foodblogpost = posts.id
+            JOIN foodblog.user users
+            ON posts.username = users.username
+          WHERE users.username = ?
+              `,
+      [request.query.username]
+    );
+    conn.release();
+    console.log(queryResponse[0]);
+    response.status(200).send({ message: queryResponse[0] });
+  } catch (error) {
+    response.status(500).send({ message: error });
+  }
+});
+
 function authorizeUser(request, response, next) {
   next();
 }
